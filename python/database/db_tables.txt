@@ -1,0 +1,108 @@
+# ==============================================================================
+# Account
+# ==============================================================================
+CREATE TABLE IF NOT EXISTS person
+(
+    person_id SMALLINT UNSIGNED AUTO_INCREMENT,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    street_number VARCHAR(20),
+    street_name VARCHAR(50),
+    apt_num VARCHAR(20),
+    city VARCHAR(100),
+    state VARCHAR(20),
+    zipcode VARCHAR(50),
+    e_mail VARCHAR(50) NOT NULL,
+    CONSTRAINT pk_person PRIMARY KEY (person_id)
+);
+
+
+CREATE TABLE IF NOT EXISTS client
+(
+    client_id SMALLINT UNSIGNED AUTO_INCREMENT,
+    trainer_id SMALLINT UNSIGNED,
+    CONSTRAINT pk_client PRIMARY KEY (client_id),
+    CONSTRAINT fk_client_trainer_id FOREIGN KEY (trainer_id) REFERENCES person (person_id)
+);
+
+
+CREATE TABLE IF NOT EXISTS account
+(
+    account_id SMALLINT UNSIGNED AUTO_INCREMENT,
+    person_id SMALLINT UNSIGNED,
+    creation_date DATE NOT NULL,
+    accout_type ENUM('trainer', 'trainee'),
+    CONSTRAINT pk_account PRIMARY KEY (account_id),
+    CONSTRAINT fk_account_person_id FOREIGN KEY (person_id) REFERENCES person (person_id)
+);
+
+
+# ==============================================================================
+# Body stats
+# ==============================================================================
+CREATE TABLE IF NOT EXISTS bodyWeight
+(
+    stat_id SMALLINT UNSIGNED AUTO_INCREMENT,
+    person_id SMALLINT UNSIGNED,
+    date_of_birth DATE,
+    height FLOAT,
+    weight FLOAT,
+    body_fat_percentage FLOAT,
+    units ENUM('lbs', 'kg'),
+    goal ENUM('L','M','G'),
+    day DATE,
+    CONSTRAINT pk_body_stats PRIMARY KEY (stat_id),
+    CONSTRAINT fk_body_stats_person_id FOREIGN KEY (person_id) REFERENCES person (person_id)
+);
+
+CREATE TABLE IF NOT EXISTS measurement
+(
+    measurement_id SMALLINT UNSIGNED AUTO_INCREMENT,
+    person_id SMALLINT UNSIGNED,
+    day DATE,
+    body_part VARCHAR(25),
+    measurement FLOAT,
+    CONSTRAINT pk_measurement PRIMARY KEY (measurement_id),
+    CONSTRAINT fk_body_specs_person_id FOREIGN KEY (person_id) REFERENCES person (person_id)
+);
+
+
+# ==============================================================================
+# Workout
+# ==============================================================================
+CREATE TABLE IF NOT EXISTS exercise
+(
+    exercise_id SMALLINT UNSIGNED AUTO_INCREMENT,
+    modifier VARCHAR(20),
+    aparatus VARCHAR(20),
+    name VARCHAR(20),
+    exercise_full_name VARCHAR(60),
+    muscle_group VARCHAR(20),
+    exercise_type ENUM('strength', 'cardio'),
+    CONSTRAINT pk_exercise PRIMARY KEY (exercise_id)
+);
+
+CREATE TABLE IF NOT EXISTS active_set
+(
+    active_set_id SMALLINT UNSIGNED AUTO_INCREMENT,
+    exercise_id SMALLINT UNSIGNED,
+    set_num SMALLINT UNSIGNED,
+    rep_count SMALLINT UNSIGNED,
+    rep_duration SMALLINT UNSIGNED,
+    set_type ENUM('standard', 'super', 'drop', 'other'),
+    CONSTRAINT pk_active_set PRIMARY KEY (active_set_id),
+    CONSTRAINT fk_active_set_exercise_id FOREIGN KEY (exercise_id) REFERENCES exercise (exercise_id)
+);
+
+CREATE TABLE IF NOT EXISTS workout
+(
+    workout_id SMALLINT UNSIGNED AUTO_INCREMENT,
+    exercise_id SMALLINT UNSIGNED,
+    day DATE,
+    set_num SMALLINT UNSIGNED,
+    rep_count SMALLINT UNSIGNED,
+    rep_duration SMALLINT UNSIGNED,
+    CONSTRAINT pk_workout PRIMARY KEY (workout_id),
+    CONSTRAINT fk_workout_exercise_id FOREIGN KEY (exercise_id) REFERENCES exercise (exercise_id)
+);
+

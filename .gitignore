@@ -1,0 +1,4 @@
+*.py[cow]
+*.idea*
+*.pydevproject*
+temp/*
