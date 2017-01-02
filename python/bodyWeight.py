@@ -136,7 +136,7 @@ def recordWeightData(weight, body_fat, km_factor=1.35, weight_units='lbs', rec_f
 if __name__ == '__main__':
     # create weight record
     RECORD_FILE = r"C:\Users\pkatzen\Desktop\weigh_in.json"
-    data, filepath = recordWeightData(134.2, 5, 1.35, "lbs", RECORD_FILE)
+    data, filepath = recordWeightData(137.2, 6, 1.35, "lbs", RECORD_FILE)
     print("Weight record written to:\n\t{0}".format(filepath))
 
     # create weight log
