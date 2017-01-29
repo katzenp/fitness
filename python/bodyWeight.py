@@ -16,11 +16,15 @@ import os
 # ==============================================================================
 # Constants/Globals
 # ==============================================================================
+RECORDS_DIR = os.path.dirname(__file__)
+RECORDS_DIR = os.path.join(RECORDS_DIR, "database", "records")
+RECORD_FILE = os.path.join(RECORDS_DIR, "weigh_in.json")
+LOG_FILE = os.path.join(RECORDS_DIR, "weight.log")
+
 KATCH_MCARDLE_MODIFIERS = {"inactive": 1.00,
                            "light": 1.20,
                            "moderate": 1.35,
                            "heavy": 1.50}
-
 
 # ==============================================================================
 # General Functions
@@ -135,12 +139,10 @@ def recordWeightData(weight, body_fat, km_factor=1.35, weight_units='lbs', rec_f
 # ==============================================================================
 if __name__ == '__main__':
     # create weight record
-    RECORD_FILE = r"C:\Users\pkatzen\Desktop\weigh_in.json"
-    data, filepath = recordWeightData(137.2, 6, 1.35, "lbs", RECORD_FILE)
+    data, filepath = recordWeightData(136.2, 10, 1.35, "lbs", RECORD_FILE)
     print("Weight record written to:\n\t{0}".format(filepath))
 
     # create weight log
-    LOG_FILE = r"C:\Users\pkatzen\Desktop\weight.log"
     with open(LOG_FILE, "w") as ofile:
         msg = "{0}\n".format("-" * 30)
         msg += "{0}\n".format(datetime.date.today())
@@ -150,6 +152,7 @@ if __name__ == '__main__':
             msg += tmp
         msg += "{0}\n".format("-" * 30)
         msg += "{0:12s}: {1}\n".format("CUT  (-500)", data.get('tdee') - 500)
+        msg += "{0:12s}: {1}\n".format("MAINTAIN", data.get('tdee'))
         msg += "{0:12s}: {1}\n".format("GAIN (+500)", data.get('tdee') + 500)
         msg += "{0}\n".format("-" * 30)
         print msg
