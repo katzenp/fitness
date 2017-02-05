@@ -82,6 +82,84 @@ def getWeightData(weight, body_fat, km_factor=1.35, weight_units='lbs'):
             'tdee': round(tdee, 2)}
 
 
+def getMacrosData(weight=135.00, metric=False):
+    """
+    Calculates macronitrient and total calorie intake for cutting, maintaining,
+    and bulking based on the given body weight
+
+    :param weight: current bodyweight
+    :type weight: float
+    :param metric: wether or not the weight given is in metric units
+    :type metric: bool
+    :return: macronutrient calorie intake values
+    :rtype: dictionary
+            {"cut": {"protein": float,
+                     "carbs": float,
+                     "fat": float,
+                     "total": float},
+             "maintain": {"protein": float,
+                          "carbs": float,
+                          "fat": float,
+                          "total": float},
+             "bulk": {"protein": float,
+                      "carbs": float,
+                      "fat": float,
+                      "total": float}}
+    """
+    # convert weight - if necessary
+    if metric:
+        weight = weight * 2.2
+
+    # define data structures
+    macros = ("protein", "carbs", "fat")
+    macro_cals = (4, 4, 9)
+    macros_data = {}
+
+    # calculate cutting calories
+    data = {"total": 0.0}
+    factors = (1.2, 1.0, 0.2)
+    for i, each in enumerate(factors):
+        # add grams of macros
+        grams = weight * each
+        data[macros[i]] = round(grams, 2)
+
+        # calculate total calories
+        cals = grams * macro_cals[i]
+        cals = round(cals, 2)
+        data["total"] += cals
+    macros_data["cut"] = data
+
+
+    # calculate maintenance calories
+    data = {"total": 0.0}
+    factors = (1.0, 1.6, 0.35)
+    for i, each in enumerate(factors):
+        # add grams of macros
+        grams = weight * each
+        data[macros[i]] = round(grams, 2)
+
+        # calculate total calories
+        cals = grams * macro_cals[i]
+        cals = round(cals, 2)
+        data["total"] += cals
+    macros_data["maintain"] = data
+
+    # calculate bulking calories
+    data = {"total": 0.0}
+    factors = (1.0, 2.0, 0.4)
+    for i, each in enumerate(factors):
+        # add grams of macros
+        grams = weight * each
+        data[macros[i]] = round(grams, 2)
+
+        # calculate total calories
+        cals = grams * macro_cals[i]
+        cals = round(cals, 2)
+        data["total"] += cals
+    macros_data["bulk"] = data
+
+    return macros_data
+
 def recordWeightData(weight, body_fat, km_factor=1.35, weight_units='lbs', rec_file=None):
     """
     Records today's weight data to the specified file
@@ -139,22 +217,31 @@ def recordWeightData(weight, body_fat, km_factor=1.35, weight_units='lbs', rec_f
 # ==============================================================================
 if __name__ == '__main__':
     # create weight record
-    data, filepath = recordWeightData(136.2, 10, 1.35, "lbs", RECORD_FILE)
+    data, filepath = recordWeightData(135.2, 13, 1.35, "lbs", RECORD_FILE)
     print("Weight record written to:\n\t{0}".format(filepath))
+
 
     # create weight log
     with open(LOG_FILE, "w") as ofile:
         msg = "{0}\n".format("-" * 30)
         msg += "{0}\n".format(datetime.date.today())
         msg += "{0}\n".format("-" * 30)
+        
+        # build weight metrics data
         for k in ["weight", "bf", "lbm", "bmr", "activeness", "tdee"]:
             tmp = "{0:12s}: {1}\n".format(k.upper(), data.get(k))
             msg += tmp
+
+        # build calorie data
+        macros_data = getMacrosData(135.2)
         msg += "{0}\n".format("-" * 30)
-        msg += "{0:12s}: {1}\n".format("CUT  (-500)", data.get('tdee') - 500)
-        msg += "{0:12s}: {1}\n".format("MAINTAIN", data.get('tdee'))
-        msg += "{0:12s}: {1}\n".format("GAIN (+500)", data.get('tdee') + 500)
+        cut = macros_data.get("cut", {}).get("total", 0.0)
+        msg += "{0:12s}: {1}\n".format("CUT", cut)
+        maintain = macros_data.get("maintain", {}).get("total", 0.0)
+        msg += "{0:12s}: {1}\n".format("MAINTAIN", maintain)
+        gain = macros_data.get("bulk", {}).get("total", 0.0)
+        msg += "{0:12s}: {1}\n".format("GAIN", gain)
         msg += "{0}\n".format("-" * 30)
-        print msg
+
         ofile.write(msg)
     print("Weight log written to:\n\t{0}".format(LOG_FILE))
