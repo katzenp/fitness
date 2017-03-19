@@ -26,6 +26,7 @@ KATCH_MCARDLE_MODIFIERS = {"inactive": 1.00,
                            "moderate": 1.35,
                            "heavy": 1.50}
 
+
 # ==============================================================================
 # General Functions
 # ==============================================================================
@@ -160,6 +161,7 @@ def getMacrosData(weight=135.00, metric=False):
 
     return macros_data
 
+
 def recordWeightData(weight, body_fat, km_factor=1.35, weight_units='lbs', rec_file=None):
     """
     Records today's weight data to the specified file
@@ -212,36 +214,45 @@ def recordWeightData(weight, body_fat, km_factor=1.35, weight_units='lbs', rec_f
     return weight_data, rec_file
 
 
-# ==============================================================================
-# Interactive session
-# ==============================================================================
-if __name__ == '__main__':
-    # create weight record
-    data, filepath = recordWeightData(135.2, 13, 1.35, "lbs", RECORD_FILE)
+def main(weight, bodyFat, activeness=1.35, recFile=RECORD_FILE, logFile=LOG_FILE):
+    # create weight record -----------------------------------------------------
+    data, filepath = recordWeightData(weight, bodyFat, activeness, "lbs", RECORD_FILE)
     print("Weight record written to:\n\t{0}".format(filepath))
 
-
-    # create weight log
+    # create weight log --------------------------------------------------------
     with open(LOG_FILE, "w") as ofile:
         msg = "{0}\n".format("-" * 30)
         msg += "{0}\n".format(datetime.date.today())
         msg += "{0}\n".format("-" * 30)
-        
+
         # build weight metrics data
         for k in ["weight", "bf", "lbm", "bmr", "activeness", "tdee"]:
             tmp = "{0:12s}: {1}\n".format(k.upper(), data.get(k))
             msg += tmp
 
         # build calorie data
-        macros_data = getMacrosData(135.2)
+        macros_data = getMacrosData(weight)
         msg += "{0}\n".format("-" * 30)
+
+        bmr = data.get('bmr', 0.0)
         cut = macros_data.get("cut", {}).get("total", 0.0)
-        msg += "{0:12s}: {1}\n".format("CUT", cut)
+        cut_cals = max(bmr, cut)
+        msg += "{0:12s}: {1}\n".format("CUT", cut_cals)
+
         maintain = macros_data.get("maintain", {}).get("total", 0.0)
         msg += "{0:12s}: {1}\n".format("MAINTAIN", maintain)
+
         gain = macros_data.get("bulk", {}).get("total", 0.0)
         msg += "{0:12s}: {1}\n".format("GAIN", gain)
+
         msg += "{0}\n".format("-" * 30)
 
         ofile.write(msg)
     print("Weight log written to:\n\t{0}".format(LOG_FILE))
+
+
+# ==============================================================================
+# Interactive session
+# ==============================================================================
+if __name__ == '__main__':
+    main(129.6, 9, activeness=1.35, recFile=RECORD_FILE, logFile=LOG_FILE)

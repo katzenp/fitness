@@ -2,3 +2,4 @@
 *.idea*
 *.pydevproject*
 temp/*
+*records*
