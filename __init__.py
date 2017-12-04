@@ -21,7 +21,6 @@ LOGGER = logging.getLogger(__name__)
 
 # database
 PACKAGE_ROOT = os.path.dirname(__file__)
-DATABASE = os.path.join(PACKAGE_ROOT, "python", "database", "fitness")
 
 # attribute import management
-__all__ = [LOGGER, PACKAGE_ROOT, DATABASE]
+__all__ = [LOGGER, PACKAGE_ROOT]
