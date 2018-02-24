@@ -1,5 +1,5 @@
 """
-bodyWeight.py
+body_weight.py
 
 Description:
     Tools and utilities for calcluating various body weight metrics

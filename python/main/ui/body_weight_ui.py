@@ -1,5 +1,5 @@
 """
-bodyWeightUI.py
+body_weight_ui.py
 
 Description:
     User interface for registering/tracking an individual's body metrics
