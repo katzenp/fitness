@@ -13,21 +13,21 @@ import traceback
 # MySQL libraries
 import mysql.connector as connector
 
-# Package libraries
-import fitness
+# local libraries
+import python.resources as resources
 
 
 # ==============================================================================
-# Constants / Globals
+# constants / globals
 # ==============================================================================
-TABLES_FILE = os.path.join(os.path.dirname(__file__), "db_tables.sql")
+TABLES_FILE = os.path.join(resources.ROOT, "configs", "db_tables.sql")
 USER_DATA = {"pkatzen@localhost": "pkatzen"}
 
 
 # ==============================================================================
-# Schema
+# schema
 # ==============================================================================
-def createDb(database=fitness.DATABASE):
+def createDb(database=resources.DATABASE):
     """
     Creates the specified database. Will overwrite it if it exists
 
@@ -64,7 +64,7 @@ def createDb(database=fitness.DATABASE):
 
 
 # ==============================================================================
-# Tables
+# tables
 # ==============================================================================
 def getCreateTableCmds(tables_path=TABLES_FILE):
     """
@@ -94,7 +94,7 @@ def getCreateTableCmds(tables_path=TABLES_FILE):
     return table_cmds
 
 
-def createTables(tables_path=TABLES_FILE, database=fitness.DATABASE):
+def createTables(tables_path=TABLES_FILE, database=resources.DATABASE):
     """
     Creates the tables specified by the given table definitions file for the
     given database
@@ -134,7 +134,7 @@ def createTables(tables_path=TABLES_FILE, database=fitness.DATABASE):
 
 
 # ==============================================================================
-# Main
+# main
 # ==============================================================================
 def main():
     """
@@ -145,8 +145,8 @@ def main():
             {"database": db,
              "table_cmds": {"table_name": "MySQL_command", ...}}
     """
-    db = createDb(fitness.DATABASE)
-    table_data = createTables(TABLES_FILE, fitness.DATABASE)
+    db = createDb(resources.DATABASE)
+    table_data = createTables(TABLES_FILE, resources.DATABASE)
     return {"database": db, "table_cmds": table_data}
 
 
@@ -155,3 +155,4 @@ def main():
 # ==============================================================================
 if __name__ == '__main__':
     main()
+ 

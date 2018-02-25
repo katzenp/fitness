@@ -7,4 +7,4 @@
 
 # Miscellaneous
 temp/*
-*records*
+*.DS_Store*

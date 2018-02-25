@@ -33,7 +33,7 @@ import sys
 from PySide import QtGui, QtCore
 
 # local libraries
-import bodyWeight
+import python.main.body_weight as body_weight
 
 
 # ==============================================================================
@@ -81,7 +81,7 @@ def getWeightLogDocument(height_cm, weight_kg, age, body_fat, male, equation, mo
     :rtype: string
     """
     # compute data
-    weight_data = bodyWeight.getWeightData(height_cm, weight_kg, age, body_fat, male, equation, modifier, precision=2)
+    weight_data = body_weight.getWeightData(height_cm, weight_kg, age, body_fat, male, equation, modifier, precision=2)
     weight_kg = weight_data.get('weight', 'undefined')
     weight_units = 'kg'
     body_fat = weight_data.get('bf', 'undefined')
@@ -91,7 +91,7 @@ def getWeightLogDocument(height_cm, weight_kg, age, body_fat, male, equation, mo
     tdee = weight_data.get('tdee', 'undefined')
 
     # compute macros data
-    macros_data = bodyWeight.getMacrosData(weight_kg)
+    macros_data = body_weight.getMacrosData(weight_kg)
     cut = macros_data.get("cut", {}).get("total", 0.0)
     maintain = macros_data.get("maintain", {}).get("total", 0.0)
     gain = macros_data.get("bulk", {}).get("total", 0.0)

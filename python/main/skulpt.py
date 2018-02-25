@@ -4,10 +4,13 @@ skulpt.py
 Description:
     Module description
 """
+import datetime
+import os
 import re
 
+import python.resources as resources
 
-SKULPT_CACHE = r"/Users/paulk/Desktop/skulpt.csv"
+SKULPT_CACHE = os.path.join(resources.ROOT, "skulpt.csv")
 
 
 def parse_data(cache=SKULPT_CACHE):
@@ -51,7 +54,13 @@ def iter_bf_data(cache=SKULPT_CACHE, margin=2.0):
 
 
 if __name__ == "__main__":
+    # get date range
+    today = datetime.datetime.today().date()
+    
     # display data
-    for date, low, high, avg in iter_bf_data(SKULPT_CACHE):
-        print "{}: {}% - {}% [{}%]".format(date, low, high, avg)
+    for date_str, low, high, avg in iter_bf_data(SKULPT_CACHE):
+        ymd = [int(each) for each in date_str.split("-")]
+        date = datetime.date(*ymd)
+        if date == today:
+            print "{}: {}% - {}% [{}%]".format(date_str, low, high, avg)
 
