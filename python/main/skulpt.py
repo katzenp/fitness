@@ -2,65 +2,75 @@
 skulpt.py
 
 Description:
-    Module description
+    Skulpt-Chzl body fat data parsing
 """
 import datetime
 import os
 import re
+import pprint
 
-import python.resources as resources
+# import fitness.python.resources as resources
 
-SKULPT_CACHE = os.path.join(resources.ROOT, "skulpt.csv")
+SKULPT_CACHE = r"/Users/paulk/sw/dev/paulk/fitness/python/resources/skulpt.csv"
 
 
-def parse_data(cache=SKULPT_CACHE):
-    # parse csv data
+def get_csv_data(cache=SKULPT_CACHE):
+    """
+    Time,Muscle,Side,MQ(0-100),MQ(raw),Fat %
+    2018-04-01T06:55:01.050Z, upper_back, l, 98.59659, 154.39984, 8
+
+    :param cache:
+    :type cache:
+    :return:
+    :rtype:
+    """
     data = {}
-    previous_date = None
-    fat_total = 0.0
-    muscle_count = 1.0
+    date = None
     for line in open(cache, "r"):
-        line = re.sub("\s|T.+Z", "", line)
-        
-        date, muscle, side, mq_percent, mq_raw, fat = line.lower().split(",")
-        if not re.search("^[0-9]", date):
+        line = re.sub("\s", "", line)
+        if not line or line .startswith("Time"):
             continue
 
+        ts,muscle,side,mqa,mqb,bfp = line.split(",")
+        muscle_name = "{}_{}".format(side, muscle)
+
+        date = ts.split(":", 1)[0][:-3]
         if date not in data:
-            if previous_date:
-                data[previous_date]["fat_average"] = fat_total / muscle_count
             data[date] = {}
-            previous_date = date
-            fat_total = 0.0
-            muscle_count = 1
-            
-        muscle = "{}_{}".format(muscle, side)
-        fat = eval(fat)
-        data[date][muscle] = fat
-        fat_total += fat
-        muscle_count += 1
+        data[date][muscle_name] = float(bfp)
 
     return data
 
 
-def iter_bf_data(cache=SKULPT_CACHE, margin=2.0):
-    data = parse_data(cache=SKULPT_CACHE)
-    for date, metrics in sorted(data.iteritems()):
-        fat = metrics.get("fat_average", 0.0)
-        low = round(fat, 2)
-        high = low + margin
-        mid = (low + high) / 2.0
-        yield date, low, high, mid
+def todays_bf(cache=SKULPT_CACHE):
+    data = get_csv_data(cache)
+    today = datetime.datetime.today().strftime("%Y-%m-%d")
+    todays_data = data.get(today)
+    bf_min = None
+    bf_max = None
+    count = 0
+    bf_avg = 0
+    for name, value in todays_data.iteritems():
+        bf_avg += value
+        if count == 0:
+            bf_min = value
+            bf_max = value
 
+        if value < bf_min:
+            bf_min = value
+        if value > bf_max:
+            bf_max = value
+
+        count += 1
+    bf_avg /= count
+    min_max_avg = (bf_min + bf_max) / 2.0
+
+    return bf_min, bf_max, min_max_avg, bf_avg
 
 if __name__ == "__main__":
-    # get date range
-    today = datetime.datetime.today().date()
-    
-    # display data
-    for date_str, low, high, avg in iter_bf_data(SKULPT_CACHE):
-        ymd = [int(each) for each in date_str.split("-")]
-        date = datetime.date(*ymd)
-        if date == today:
-            print "{}: {}% - {}% [{}%]".format(date_str, low, high, avg)
-
+    msg = "{}\n".format(datetime.datetime.today().strftime("%Y-%m-%d"))
+    msg += """
+    {} - {} : {}
+    avg: {}
+    """.format(*todays_bf())
+    print(msg)
