@@ -14,7 +14,7 @@ import traceback
 import mysql.connector as connector
 
 # local libraries
-import python.resources as resources
+import fitness.resources as resources
 
 
 # ==============================================================================

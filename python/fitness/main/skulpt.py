@@ -4,23 +4,39 @@ skulpt.py
 Description:
     Skulpt-Chzl body fat data parsing
 """
+# Python standard libraries
 import datetime
 import os
 import re
 import pprint
 
-import python.resources as resources
+# Local libraries
+import fitness.resources as resources
 
 
+# ==============================================================================
+# constants / globals
+# ==============================================================================
+DATE_FORMAT = "{year:04d}-{month:02d}-{day:02d}"
+
+
+
+# ==============================================================================
+# general
+# ==============================================================================
 def get_csv_data(cache):
     """
-    Time,Muscle,Side,MQ(0-100),MQ(raw),Fat %
+    Returns body fat measurements by date and body part as defined by the given cache file.
+    Data is returned as a dictionary with the following format:
     2018-04-01T06:55:01.050Z, upper_back, l, 98.59659, 154.39984, 8
-
-    :param cache:
-    :type cache:
-    :return:
-    :rtype:
+        {
+            'YYYY-MM-DD', {'body_part': int, ...'},
+            ...
+        }
+    :param cache: full file path to a skulpt.csv file
+    :type cache: string
+    :return: date and body part centric body fat measurements
+    :rtype: dictionary
     """
     data = {}
     date = None
@@ -40,12 +56,39 @@ def get_csv_data(cache):
     return data
 
 
-def get_bf(cache, date=None):
-    if not date:
-        date = datetime.datetime.today().strftime("%Y-%m-%d")
-    data = get_csv_data(cache)
+def get_bf(cache, year, month, day):
+    """
+    Returns body fat measurement data for a specific date from the given skulpt
+    cache file. The following values are returned:
+        bf_min: lowest body fat value
+        bf_max: highest body fat value
+        min_max_avg: average of lowest and highest (lowest + highest / 2)
+        bf_avg: average of ALL available measurements
 
-    bf_data = data[date]
+    :param cache: full file path to a skulpt.csv file
+    :type cache: string
+    :param year: the year you wish to query
+    :type year: int
+    :param month: the month you wish to query
+    :type month: int
+    :param day: the day you wish to query
+    :type day: int
+    :return: body fat data --> (bf_min, bf_max, min_max_avg, bf_avg)
+    :rtype: tuple
+    """
+    # get date centric data
+    data = get_csv_data(cache)
+    for each in sorted(data.iteritems()):
+        print each 
+        break
+    date = DATE_FORMAT.format(year=year, month=month, day=day)
+    try:
+        bf_data = data[date]
+    except KeyError :
+        msg = "No body fat measurements exist for date: {}".format(date)
+        raise KeyError(msg)
+    
+    # parse data
     bf_min = None
     bf_max = None
     count = 0
@@ -69,11 +112,13 @@ def get_bf(cache, date=None):
 
 
 if __name__ == "__main__":
-    date = datetime.datetime.today()
-    date_str = date.strftime("%Y-%m-%d")
+    today = datetime.datetime.today()
+    date = DATE_FORMAT.format(
+        year=today.year,
+        month=today.month,
+        day=today.day,
+    )
+    bf_data = get_bf(resources.SKULPT_CACHE, year=today.year, month=today.month, day=today.day)
     msg = """{}\n\t{} - {} ~ {}\n\tAvg: {}
-    """.format(
-        date_str,
-        *get_bf(resources.SKULPT_CACHE, date=date_str)
-        )
+    """.format(date, *bf_data)
     print(msg)

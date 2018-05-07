@@ -1,7 +1,6 @@
 import datetime
 
-MESOCYCLES = {
-        
+MESOCYCLES = {     
     "bls" :[
         "normal",
         "normal",
@@ -37,8 +36,7 @@ def print_program(start, end, mesocycle, euro_date=False):
     :type start: instance of <class 'datetime.datetime'>
     :param end: program end date
     :type end: instance of <class 'datetime.datetime'>
-    :param mesocycle: list of mesocycle week types like:
-        [normal, normal, strength, delaod]
+    :param mesocycle: list of mesocycle week types like: [normal, normal, strength, delaod]
     :type mesocycle: list
     :param euro_date: option to use european date displays
     :type euro_date: bool

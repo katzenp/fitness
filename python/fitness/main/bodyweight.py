@@ -16,11 +16,15 @@ import time
 # ==============================================================================
 # Constants/Globals
 # ==============================================================================
-RECORDS_DIR = os.path.dirname(__file__)
-RECORDS_DIR = os.path.join(RECORDS_DIR, "database", "records")
+# records
+RECORDS_DIR = os.path.join(
+    os.path.dirname(__file__),
+    "database",
+    "records")
 RECORD_FILE = os.path.join(RECORDS_DIR, "weigh_in.json")
 LOG_FILE = os.path.join(RECORDS_DIR, "weight.log")
 
+# BMR/TDEE
 BMR_EQUATIONS = ["harrisBenedict",
                  "mifflinStJeor",
                  "katchMcArdle"]
@@ -36,24 +40,24 @@ MODIFIERS = {"inactive": 1.00,
 def getMacrosData(weight_kg):
     """
     Calculates macronitrient and total calorie intake for cutting, maintaining,
-    and bulking based on the given body weight
+    and bulking based on the given body weight. Returns a dictionary like:
+        {"cut": {"protein": float,
+                 "carbs": float,
+                 "fat": float,
+                 "total": float},
+         "maintain": {"protein": float,
+                      "carbs": float,
+                      "fat": float,
+                      "total": float},
+         "bulk": {"protein": float,
+                  "carbs": float,
+                  "fat": float,
+                  "total": float}}
 
     :param weight_kg: current bodyweight in kilograms
     :type weight_kg: float
     :return: macronutrient calorie intake values
     :rtype: dictionary
-            {"cut": {"protein": float,
-                     "carbs": float,
-                     "fat": float,
-                     "total": float},
-             "maintain": {"protein": float,
-                          "carbs": float,
-                          "fat": float,
-                          "total": float},
-             "bulk": {"protein": float,
-                      "carbs": float,
-                      "fat": float,
-                      "total": float}}
     """
     # convert weight from metric
     weight_lbs = weight_kg * 2.2
@@ -123,7 +127,7 @@ def getBmi(weight_kg, height_cm, precision=2):
     :return: body mas index value
     :rtype: float
     """
-    bmi = weight_kg / ((height_cm * 0.01)**2)
+    bmi = weight_kg / ((height_cm * 0.01) ** 2)
     return round(bmi, precision)
 
 
