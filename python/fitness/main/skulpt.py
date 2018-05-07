@@ -20,7 +20,6 @@ import fitness.resources as resources
 DATE_FORMAT = "{year:04d}-{month:02d}-{day:02d}"
 
 
-
 # ==============================================================================
 # general
 # ==============================================================================
@@ -78,9 +77,6 @@ def get_bf(cache, year, month, day):
     """
     # get date centric data
     data = get_csv_data(cache)
-    for each in sorted(data.iteritems()):
-        print each 
-        break
     date = DATE_FORMAT.format(year=year, month=month, day=day)
     try:
         bf_data = data[date]
