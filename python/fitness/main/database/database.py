@@ -14,73 +14,73 @@ import traceback
 import mysql.connector as connector
 
 # local libraries
-import fitness.resources as resources
+import fitness
 
 
 # ==============================================================================
 # constants / globals
 # ==============================================================================
-TABLES_FILE = os.path.join(resources.ROOT, "configs", "db_tables.sql")
-USER_DATA = {"pkatzen@localhost": "pkatzen"}
+TABLES_FILE = os.path.join(fitness.CONFIGS, "db_tables.sql")
 
 
 # ==============================================================================
 # schema
 # ==============================================================================
-def createDb(database=resources.DATABASE):
+def create_db(database, user, user_alias):
     """
-    Creates the specified database. Will overwrite it if it exists
+    Creates the specified database at the specified location.
 
-    :param database: disk location of the database you want to create
+    :param database: full file path of the database
     :type database: string
-    :return: path to the new database
-    :rtype: string
+    :param user: user name like: ${USER}@localhost
+    :type user: string
+    :param user_alias: user name alias
+    :type user_alias: string
+    :return: n/a
+    :rtype: n/a
     """
-    db_dir, db_name = os.path.split(database)
+    location, name = os.path.split(database)
+
     # change into db directory
-    pwd = os.getcwd()
-    os.chdir(db_dir)
+    cwd = os.getcwd()
+    os.chdir(location)
 
     # connect to server
     conn = connector.connect(user='root', password='r00t', host='localhost')
     cursor = conn.cursor()
 
-    # create database - overwrite if nexessary
-    cursor.execute("DROP DATABASE IF EXISTS {0};".format(db_name))
-    _LOGGER.info("Creating database: {0}".format(database))
-    cursor.execute("CREATE DATABASE {0};".format(db_name))
+    # create database
+    cursor.execute("DROP DATABASE IF EXISTS {};".format(name))
+    fitness.LOGGER.info("Creating database @: {}".format(database))
+    cursor.execute("CREATE DATABASE {};".format(name))
 
     # grant access
-    for host, alias in USER_DATA.items():
-        cmd = "grant all privileges on {0}.* ".format(db_name)
-        cmd += "to \'{0}\' ".format(host)
-        cmd += "identified by \'{0}\';".format(alias)
-        cursor.execute(cmd)
+    cmd = "grant all privileges on {}.* to {!r} identified by {!r};".format(
+        name, user, user_alias
+    )
+    cursor.execute(cmd)
 
-    # reset to previous working durectory
-    os.chdir(pwd)
-
-    return database
+    # reset to previous working directory
+    os.chdir(cwd)
 
 
 # ==============================================================================
 # tables
 # ==============================================================================
-def getCreateTableCmds(tables_path=TABLES_FILE):
+def _table_commands(sourcefile):
     """
     Returns a mapping of table name, MySQL command pairs used to create database
     tables specified by the given table definitions file
 
-    :param tables_path: file containing MySQL table creation statements
-    :type tables_path: string
-    :return: MySQL table creation commands
+    :param sourcefile: file containing MySQL table creation statements
+    :type sourcefile: string
+    :return: MySQL table creation commands like: {"table_name": "MySQL_command", ...}
     :rtype: instance of <class 'OrderedDict'>
-            {"table_name": "MySQL_command", ...}
     """
     table_cmds = collections.OrderedDict()
     key = None
     cmd = ""
-    for line in open(tables_path, 'r'):
+    for line in open(sourcefile, 'r'):
         if line.startswith("#"):
             continue
         result = re.search("^CREATE TABLE IF NOT EXISTS +(\w+)", line)
@@ -94,22 +94,18 @@ def getCreateTableCmds(tables_path=TABLES_FILE):
     return table_cmds
 
 
-def createTables(tables_path=TABLES_FILE, database=resources.DATABASE):
+def create_tables(sourcefile, database):
     """
     Creates the tables specified by the given table definitions file for the
     given database
 
-    :param tables_path: file containing MySQL table creation statements
-    :type tables_path: string
+    :param sourcefile: file containing MySQL table creation statements
+    :type sourcefile: string
     :param database: disk location of the database you want to create tables for
     :type database: string
-    :return: MySQL table creation commands
+    :return: MySQL table creation commands like: {"table_name": "MySQL_command", ...}
     :rtype: instance of <class 'OrderedDict'>
-            {"table_name": "MySQL_command", ...}
     """
-    # get table creation commands
-    table_cmd_data = getCreateTableCmds(tables_path)
-
     # connect to db
     db_dir, db_name = os.path.split(database)
     pwd = os.getcwd()
@@ -121,8 +117,9 @@ def createTables(tables_path=TABLES_FILE, database=resources.DATABASE):
     cursor = conn.cursor()
 
     # create tables
-    for name, cmd in table_cmd_data.items():
-        _LOGGER.info("Creating table: {0}".format(name))
+    table_cmd_data = _table_command(sourcefile)
+    for table, cmd in table_cmd_data.items():
+        fitness.LOGGER.info("Creating table: {}".format(table))
         try:
             cursor.execute(cmd)
         except:
@@ -138,21 +135,12 @@ def createTables(tables_path=TABLES_FILE, database=resources.DATABASE):
 # ==============================================================================
 def main():
     """
-    Builds the fitness database
+    Builds a fitness database
 
-    :return: dabase creation data
+    :return: dabase creation data like: {"database": db, "table_cmds": {}}
     :rtype: dictionary
-            {"database": db,
-             "table_cmds": {"table_name": "MySQL_command", ...}}
     """
-    db = createDb(resources.DATABASE)
-    table_data = createTables(TABLES_FILE, resources.DATABASE)
-    return {"database": db, "table_cmds": table_data}
-
-
-# ==============================================================================
-# Interactive session
-# ==============================================================================
-if __name__ == '__main__':
-    main()
- 
+    database = os.path.join(os.getenv("HOME"), "fitness.db")
+    create_db(database, "pkatzen@localhost", "pkatzen")
+    table_data = create_tables(TABLES_FILE, database)
+    return {"database": database, "table_data": table_data}

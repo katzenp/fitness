@@ -1,45 +1,61 @@
+#! /usr/bin/python
 """
 skulpt.py
 
 Description:
-    Skulpt-Chzl body fat data parsing
+    Tools and utilities for managing Skulpt-Chzl body fat scanner data 
 """
 # Python standard libraries
+import argparse
 import datetime
+import json
 import os
 import re
-import pprint
 
 # Local libraries
-import fitness.resources as resources
+import fitness
 
 
 # ==============================================================================
 # constants / globals
 # ==============================================================================
-DATE_FORMAT = "{year:04d}-{month:02d}-{day:02d}"
+SKULPT_CACHE = os.path.join(fitness.CACHES, "skulpt.csv")
+DATE_FORMAT = fitness.SETTINGS.get("date_format")
+REPORT = """{date}
+    min       {min_:4.2f}
+    max       {max_:4.2f}
+    mm_avg    {min_max_avg:4.2f}
+    avg       {avg:4.2f}
+"""
 
 
 # ==============================================================================
 # general
 # ==============================================================================
-def get_csv_data(cache):
+def get_body_fat_data(sourcefile):
     """
-    Returns body fat measurements by date and body part as defined by the given cache file.
-    Data is returned as a dictionary with the following format:
-    2018-04-01T06:55:01.050Z, upper_back, l, 98.59659, 154.39984, 8
+    Returns body fat measurements by date and body part as defined by the given sourcefile file.
+
+    The source file should be a csv file with the following format:
+        Time, Muscle, Side, MQ(0-100), MQ(raw), Fat_%
+        // 2018-04-01T06:55:01.050Z, upper_back, l, 98.59659, 154.39984, 8
+
+    Body fat data is returned in a dictionary with the following format:
         {
-            'YYYY-MM-DD', {'body_part': int, ...'},
+            'YYYY-MM-DD', {
+                'body_part': int,
+                ...'
+                },
             ...
         }
-    :param cache: full file path to a skulpt.csv file
-    :type cache: string
+    :param sourcefile: full file path to a body fat measurement data file
+    :type sourcefile: string
     :return: date and body part centric body fat measurements
     :rtype: dictionary
     """
     data = {}
     date = None
-    for line in open(cache, "r"):
+    for line in open(sourcefile, "r"):
         line = re.sub("\s", "", line)
         if not line or line .startswith("Time"):
             continue
@@ -55,28 +71,29 @@ def get_csv_data(cache):
     return data
 
 
-def get_bf(cache, year, month, day):
+def get_body_fat(year, month, day, sourcefile):
     """
-    Returns body fat measurement data for a specific date from the given skulpt
-    cache file. The following values are returned:
+    Returns body fat measurement data for a specific date from the given sourcefile file.
+
+    The following values are returned:
         bf_min: lowest body fat value
         bf_max: highest body fat value
         min_max_avg: average of lowest and highest (lowest + highest / 2)
         bf_avg: average of ALL available measurements
 
-    :param cache: full file path to a skulpt.csv file
-    :type cache: string
     :param year: the year you wish to query
     :type year: int
     :param month: the month you wish to query
     :type month: int
     :param day: the day you wish to query
     :type day: int
-    :return: body fat data --> (bf_min, bf_max, min_max_avg, bf_avg)
+    :param sourcefile: full file path to a skulpt.csv file
+    :type sourcefile: string
+    :return: body fat data like: (bf_min, bf_max, min_max_avg, bf_avg)
     :rtype: tuple
     """
     # get date centric data
-    data = get_csv_data(cache)
+    data = get_body_fat_data(sourcefile)
     date = DATE_FORMAT.format(year=year, month=month, day=day)
     try:
         bf_data = data[date]
@@ -107,14 +124,80 @@ def get_bf(cache, year, month, day):
     return bf_min, bf_max, min_max_avg, bf_avg
 
 
-if __name__ == "__main__":
-    today = datetime.datetime.today()
-    date = DATE_FORMAT.format(
-        year=today.year,
-        month=today.month,
-        day=today.day,
+# ==============================================================================
+# main
+# ==============================================================================
+def main():
+    """
+    Command line entry point function
+
+    :return: N/A
+    :rvalue: N/A
+    """
+    # date time
+    TODAY = datetime.datetime.today()
+
+    # define argument parser
+    DESCRIPTION = """
+    Prints out body fat data for the given date based on a Skulpt cache
+    """
+    parser = argparse.ArgumentParser(
+        prog=os.path.basename(__file__),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=DESCRIPTION)
+
+    # add command line args
+    parser.add_argument(
+        "-y", "--year",
+        action="store",
+        default=TODAY.year,
+        type=str,
+        help="The year",
+        metavar=""
     )
-    bf_data = get_bf(resources.SKULPT_CACHE, year=today.year, month=today.month, day=today.day)
-    msg = """{}\n\t{} - {} ~ {}\n\tAvg: {}
-    """.format(date, *bf_data)
+
+    parser.add_argument(
+        "-m", "--month",
+        action="store",
+        default=TODAY.month,
+        type=str,
+        help="The month",
+        metavar=""
+    )
+
+    parser.add_argument(
+        "-d", "--day",
+        action="store",
+        default=TODAY.day,
+        type=str,
+        help="The day",
+        metavar=""
+    )
+
+    parser.add_argument(
+        "-s", "--sourcefile",
+        action="store",
+        default=SKULPT_CACHE,
+        type=str,
+        help="Skulpt cache file (.csv)",
+        metavar=""
+    )
+
+    # pares arguments
+    args = parser.parse_args()
+    year = args.year
+    month = args.month
+    day = args.day
+
+    # print report
+    sourcefile = args.sourcefile
+    data = get_body_fat(year, month, day, sourcefile)
+    date = DATE_FORMAT.format(year=year, month=month, day=day)
+    msg = REPORT.format(
+        date=date, min_=data[0], max_=data[1], min_max_avg=data[2], avg=data[3]
+    )
     print(msg)
+
+
+if __name__ == "__main__":
+    main()

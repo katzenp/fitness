@@ -1,0 +1,58 @@
+{
+    "data_limit": null,
+    "date_format": "{year:04d}-{month:02d}-{day:02d}",
+    "precision": 2,
+    "genders": [
+        "female",
+        "male"
+    ],
+
+    "measurement": {
+        "imperial": {
+            "height": "in.",
+            "weight": "lbs."
+        },
+                   
+        "metric": {
+            "height": "cm.",
+            "weight": "kg."
+        }
+    },
+    
+    "macro_calories": {
+        "carbohydrate": 4,
+        "fat": 9,
+        "protein": 4
+    },
+
+    "macro_multipliers": {   
+        "cut": {
+            "carbohydrate": 1.0,
+            "fat": 0.2,
+            "protein": 1.2
+        },
+        "maintain":{
+            "carbohydrate": 1.6,
+            "fat": 0.35,
+            "protein": 1.0
+        },
+        "bulk":{
+            "carbohydrate": 2.0,
+            "fat": 0.4,
+            "protein": 1.0
+        }
+    },
+
+    "bmr_formulas": [
+        "harrisBenedict",
+        "mifflinStJeor",
+        "katchMcArdle"
+    ],
+
+    "tdee_multipliers": {
+        "inactive": 1.00,
+        "light": 1.20,
+        "moderate": 1.35,
+        "heavy": 1.50
+    }
+}

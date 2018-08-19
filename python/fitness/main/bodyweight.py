@@ -1,120 +1,75 @@
 """
-body_weight.py
+bodyweight.py
 
 Description:
-    Tools and utilities for calcluating various body weight metrics
-    with a focus on tracking personal fitness goals.
-    The algorithms in this module use the metric system
+    Tools and utilities for managing the body weight statistics used to track
+    personal fitness goals. All algorithms in this module use the metric system
 """
-# Python libraries
+# Python standard libraries
 import datetime
 import json
 import os
 import time
 
-
-# ==============================================================================
-# Constants/Globals
-# ==============================================================================
-# records
-RECORDS_DIR = os.path.join(
-    os.path.dirname(__file__),
-    "database",
-    "records")
-RECORD_FILE = os.path.join(RECORDS_DIR, "weigh_in.json")
-LOG_FILE = os.path.join(RECORDS_DIR, "weight.log")
-
-# BMR/TDEE
-BMR_EQUATIONS = ["harrisBenedict",
-                 "mifflinStJeor",
-                 "katchMcArdle"]
-MODIFIERS = {"inactive": 1.00,
-             "light": 1.20,
-             "moderate": 1.35,
-             "heavy": 1.50}
+# local libraries
+from fitness import SETTINGS
 
 
 # ==============================================================================
-# General
+# macronutrients
 # ==============================================================================
-def getMacrosData(weight_kg):
+def macro_calories(carbohydrate, fat, protein):
     """
-    Calculates macronitrient and total calorie intake for cutting, maintaining,
-    and bulking based on the given body weight. Returns a dictionary like:
-        {"cut": {"protein": float,
-                 "carbs": float,
-                 "fat": float,
-                 "total": float},
-         "maintain": {"protein": float,
-                      "carbs": float,
-                      "fat": float,
-                      "total": float},
-         "bulk": {"protein": float,
-                  "carbs": float,
-                  "fat": float,
-                  "total": float}}
+    returns a list of macronutrient calories based on the specified
+    macronutrient gram amounts.
+        
+    :param carbohydrate: amount of carbohydrate given grams
+    :type carbohydrate: float, int
+    :param fat: amount of fat given grams
+    :type fat: float, int
+    :param protein: amount of protein given grams
+    :type protein: float, int
+    :return: macronutrient calories like: (carb_calories, fat_calories, protein_calories)
+    :rtype: tuple
+    """
+    carbohydrate *= SETTINGS["macro_calories"]["carbohydrate"]    
+    fat *= SETTINGS["macro_calories"]["fat"]    
+    protein *= SETTINGS["macro_calories"]["protein"]
+    return (carbohydrate, fat, protein)
 
-    :param weight_kg: current bodyweight in kilograms
+
+def goal_macros(weight_kg):
+    """
+    Returns the amount of each macronutrient that should be consumed daily
+    for each of the following weight management goals:
+        cut, maintain, bulk
+
+    Return Value Details
+        {   
+            "goal": {
+                "carbohydrate": amount_grams,
+                "fat": amount_grams,
+                "protein": amount_grams
+            },
+            ...
+        }
+
+    :param weight_kg: weight in kilograms
     :type weight_kg: float
-    :return: macronutrient calorie intake values
-    :rtype: dictionary
+    :return: macronutrient grams by goal
+    :rtype: dict
     """
-    # convert weight from metric
-    weight_lbs = weight_kg * 2.2
+    macro_multipliers = SETTINGS["macro_multipliers"]
+    data = {}
+    for goal in ("cut", "maintain", "bulk"):
+        data[goal] = {} 
+        for macro in ("carbohydrate", "fat", "protein"):
+            data[goal][macro] = (weight_kg * 2.2) * macro_multipliers[goal][macro]
 
-    # define data structures
-    macros = ("protein", "carbs", "fat")
-    macro_cals = (4, 4, 9)
-    macros_data = dict()
+    return data
+ 
 
-    # calculate cutting calories -----------------------------------------------
-    data = {"total": 0.0}
-    factors = (1.2, 1.0, 0.2)
-    for i, each in enumerate(factors):
-        # add grams of macros
-        grams = weight_lbs * each
-        data[macros[i]] = round(grams, 2)
-
-        # calculate total calories
-        cals = grams * macro_cals[i]
-        cals = round(cals, 2)
-        data["total"] += cals
-    macros_data["cut"] = data
-
-    # calculate maintenance calories -------------------------------------------
-    data = {"total": 0.0}
-    factors = (1.0, 1.6, 0.35)
-    for i, each in enumerate(factors):
-        # add grams of macros
-        grams = weight_lbs * each
-        data[macros[i]] = round(grams, 2)
-
-        # calculate total calories
-        cals = grams * macro_cals[i]
-        cals = round(cals, 2)
-        data["total"] += cals
-    macros_data["maintain"] = data
-
-    # calculate bulking calories -----------------------------------------------
-    data = {"total": 0.0}
-    factors = (1.0, 2.0, 0.4)
-    for i, each in enumerate(factors):
-        # add grams of macros
-        grams = weight_lbs * each
-        data[macros[i]] = round(grams, 2)
-
-        # calculate total calories
-        cals = grams * macro_cals[i]
-        cals = round(cals, 2)
-        data["total"] += cals
-    macros_data["bulk"] = data
-
-    data["total"] = round(data.get('total'))
-
-    return macros_data
-
-
-def getBmi(weight_kg, height_cm, precision=2):
+def bmi(weight_kg, height_cm):
     """
     Returns a Body Mass INdex value based on the weight and height
 
@@ -128,10 +83,13 @@ def getBmi(weight_kg, height_cm, precision=2):
     :rtype: float
     """
     bmi = weight_kg / ((height_cm * 0.01) ** 2)
-    return round(bmi, precision)
+    return bmi, precision
 
 
-def getBmr_harrisBenedict(height_cm, weight_kg, age, male=True):
+# ==============================================================================
+# bmr
+# ==============================================================================
+def bmr_harrisBenedict(height_cm, weight_kg, age, male=True):
     """
     Returns the basal metabolic rate calculated using the Harris-Benedict equation
 
@@ -154,7 +112,7 @@ def getBmr_harrisBenedict(height_cm, weight_kg, age, male=True):
     return bmr
 
 
-def getBmr_mifflinStJeor(height_cm, weight_kg, age, male=True):
+def bmr_mifflinStJeor(height_cm, weight_kg, age, male=True):
     """
     Returns the basal metabolic rate calculated using the Mifflin-StJeor equation
 
@@ -177,7 +135,7 @@ def getBmr_mifflinStJeor(height_cm, weight_kg, age, male=True):
     return bmr
 
 
-def getBmr_katchMcArdle(weight_kg, body_fat):
+def bmr_katchMcArdle(weight_kg, body_fat):
     """
     Returns the basal metabolic rate calculated using the Katch-McArdle equation
 
@@ -193,7 +151,7 @@ def getBmr_katchMcArdle(weight_kg, body_fat):
     return bmr
 
 
-def getBmr(height_cm, weight_kg, age, body_fat, male=True, equation=None):
+def bmr(height_cm, weight_kg, age, body_fat, male=True, equation=None):
     """
     Returns the basal metabolic rate calculated using one of the following equations:
         Harris-Benedict
@@ -220,19 +178,22 @@ def getBmr(height_cm, weight_kg, age, body_fat, male=True, equation=None):
     :rtype: float
     """
     if equation == 'harrisBenedict':
-        return getBmr_harrisBenedict(height_cm, weight_kg, age, male)
+        return bmr_harrisBenedict(height_cm, weight_kg, age, male)
     elif equation == 'mifflinStJeor':
-        return  getBmr_mifflinStJeor(height_cm, weight_kg, age, male)
+        return  bmr_mifflinStJeor(height_cm, weight_kg, age, male)
     elif equation == 'katchMcArdle':
-        return getBmr_katchMcArdle(weight_kg, body_fat)
+        return bmr_katchMcArdle(weight_kg, body_fat)
     else:
-        average = getBmr_harrisBenedict(height_cm, weight_kg, age, male)
-        average += getBmr_mifflinStJeor(height_cm, weight_kg, age, male)
-        average += getBmr_katchMcArdle(weight_kg, body_fat)
+        average = bmr_harrisBenedict(height_cm, weight_kg, age, male)
+        average += bmr_mifflinStJeor(height_cm, weight_kg, age, male)
+        average += bmr_katchMcArdle(weight_kg, body_fat)
         return average / 3.0
 
 
-def getWeightData(height_cm, weight_kg, age, body_fat, male=True, equation=None, modifier=1.2, precision=2):
+# ==============================================================================
+# weight
+# ==============================================================================
+def get_weight_data(height_cm, weight_kg, age, body_fat, male=True, equation=None, modifier=1.2):
     """
     Retruns a dictionary of weight data containing the following information:
         weight: your body weight expressed in kilograms
@@ -262,8 +223,6 @@ def getWeightData(height_cm, weight_kg, age, body_fat, male=True, equation=None,
                      Adjusts your basal metabolic rate to reflect the number of 
                      calories burned through exercise (total daily energy expenditure)
     :type modifier: float in range 1.0 - 1.50
-    :param precision: number of digits after the decimal point for all data values
-    :type precision: int
     :return: weight management data
     :rtype: dictionary
             {'weight': float,
@@ -276,22 +235,22 @@ def getWeightData(height_cm, weight_kg, age, body_fat, male=True, equation=None,
     lbm_kg = weight_kg * ((100.00 - body_fat) / 100.00)
 
     # calculate basal metabolic rate
-    bmr = getBmr(height_cm, weight_kg, age, body_fat, male, equation)
+    bmr = bmr(height_cm, weight_kg, age, body_fat, male, equation)
 
     # calculate total daily energy expenditure
     tdee = bmr * modifier
 
-    return {'weight': round(weight_kg, precision),
-            'bf': round(body_fat, precision),
-            'lbm': round(lbm_kg, precision),
-            'bmr': round(bmr, precision),
-            'activeness': round(modifier, precision),
-            'tdee': round(tdee, precision)}
+    return {'weight': weight_kg,
+            'bf': body_fat,
+            'lbm': lbm_kg,
+            'bmr': bmr,
+            'activeness': modifier,
+            'tdee': tdee}
 
 
-def recordWeightData(height_cm, weight_kg, age, body_fat, male=True, equation='katchMcArdle', modifier=1.2, precision=2, rec_file=None):
+def update_weight_log(height_cm, weight_kg, age, body_fat, male=True, equation='katchMcArdle', modifier=1.2, outputfile=None):
     """
-    Records today's weight data to the specified file
+    Adds the weight data to the specified outputfile file
     Weight data is collected into a dictionary containing the following information:
         weight: your body weight expressed in kg
         bf: body fat percentage
@@ -320,22 +279,19 @@ def recordWeightData(height_cm, weight_kg, age, body_fat, male=True, equation='k
                      Adjusts your basal metabolic rate to reflect the number of 
                      calories burned through exercise (total daily energy expenditure)
     :type modifier: float in range 1.0 - 1.50
-    :param precision: number of digits after the decimal point for all data values
-    :type precision: int
-    :param rec_file: name of the metadata file to write data out to
-    :type rec_file: string
-    :return: today's weight data and the name of the metadata file
-    :rtype: tuple
-            ({}, "weight_record_filepath")
+    :param outputfile: name of the file to write data out to
+    :type outputfile: string
+    :return: today's weight data and the output file name: ({}, "outputfile")
+    :rtype: tuple    
     """
     # check parameters
-    if not rec_file:
+    if not outputfile:
         raise IOError("No weight record file specified.")
 
     # get current weight data records
     data = {}
-    if os.path.isfile(rec_file):
-        with open(rec_file, 'r') as infile:
+    if os.path.isfile(outputfile):
+        with open(outputfile, 'r') as infile:
             try:
                 data = json.load(infile)
             except Exception:
@@ -344,77 +300,11 @@ def recordWeightData(height_cm, weight_kg, age, body_fat, male=True, equation='k
     # update weight data records
     weight_data = {}
     timestamp = time.time()
-    with open(rec_file, 'w') as outfile:
-        weight_data = getWeightData(height_cm,
-                                    weight_kg,
-                                    age,
-                                    body_fat,
-                                    male,
-                                    equation,
-                                    modifier,
-                                    precision)
+    with open(outputfile, 'w') as outfile:
+        weight_data = get_weight_data(
+            height_cm, weight_kg, age, body_fat, male, equation, modifier
+        )
         data[timestamp] = weight_data
         json.dump(data, outfile, indent=4)
 
-    return (weight_data, rec_file)
-
-
-def main(height_cm, weight_kg, age, body_fat, male=True, equation='katchMcArdle', modifier=1.2, precision=2, recFile=RECORD_FILE, logFile=LOG_FILE):
-    # create weight record -----------------------------------------------------
-    data, filepath = recordWeightData(height_cm,
-                                      weight_kg,
-                                      age,
-                                      body_fat,
-                                      male,
-                                      equation,
-                                      modifier,
-                                      precision,
-                                      recFile)
-    print("Weight record written to:\n\t{0}".format(filepath))
-
-    # create weight log --------------------------------------------------------
-    with open(LOG_FILE, "w") as ofile:
-        msg = "{0}\n".format("-" * 30)
-        msg += "{0}\n".format(datetime.date.today())
-        msg += "{0}\n".format("-" * 30)
-
-        # build weight metrics data
-        for k in ["weight", "bf", "lbm", "bmr", "activeness", "tdee"]:
-            tmp = "{0:12s}: {1}\n".format(k.upper(), data.get(k))
-            msg += tmp
-
-        # build calorie data
-        macros_data = getMacrosData(weight_kg)
-        msg += "{0}\n".format("-" * 30)
-
-        cut = macros_data.get("cut", {}).get("total", 0.0)
-        msg += "{0:12s}: {1}\n".format("CUT", cut)
-
-        maintain = macros_data.get("maintain", {}).get("total", 0.0)
-        msg += "{0:12s}: {1}\n".format("MAINTAIN", maintain)
-
-        gain = macros_data.get("bulk", {}).get("total", 0.0)
-        msg += "{0:12s}: {1}\n".format("GAIN", gain)
-
-        msg += "{0}\n".format("-" * 30)
-
-        ofile.write(msg)
-    print("Weight log written to:\n\t{0}".format(LOG_FILE))
-
-
-# ==============================================================================
-# Interactive session
-# ==============================================================================
-if __name__ == '__main__':
-    # weight_kg = weight_lbs * 0.454
-    weight_kg = 129.6 * 0.454
-    main(height_cm=162.56,
-         weight_kg=weight_kg,
-         age=40.0,
-         body_fat=10.0,
-         male=True,
-         equation=None,
-         modifier=1.2,
-         precision=2,
-         recFile=RECORD_FILE,
-         logFile=LOG_FILE)
+    return (weight_data, outputfile)
