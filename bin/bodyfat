@@ -1,0 +1,110 @@
+#! /usr/bin/python
+"""
+skulpt.py
+
+Description:
+    Tools and utilities for managing Skulpt-Chzl body fat scanner data 
+"""
+# Python standard libraries
+import argparse
+import datetime
+import os
+import sys
+
+# Local libraries
+pkg_root = os.path.realpath(__file__).rsplit(os.sep, 2)[0]
+if pkg_root not in sys.path:
+    sys.path.append(pkg_root)
+
+import fitness.main.skulpt as skulpt
+
+
+# ==============================================================================
+# constants / globals
+# ==============================================================================
+DESCRIPTION = """
+Prints out the body fat data for a specific date.
+Body fat data must be defined by a CSV file formatted like:
+    {time}, {muscle}, {side}, {mq_percent}, {mq_raw}, {fat_percent}
+    2018-08-19T06:30:32.982Z, upper_back, l, 98.11087, 152.77301, 7.5
+"""
+
+TODAY = datetime.datetime.today()
+
+
+# ==============================================================================
+# main
+# ==============================================================================
+def main():
+    """
+    Command line entry point function
+
+    :return: n/a
+    :rvalue: n/a
+    """
+    # define argument parser
+    parser = argparse.ArgumentParser(
+        prog=os.path.basename(__file__),
+        formatter_class=argparse.RawTextHelpFormatter,
+        description=DESCRIPTION
+    )
+
+    # add command line args
+    parser.add_argument(
+        "-y", "--year",
+        action="store",
+        default=TODAY.year,
+        type=str,
+        help="the year part of a date",
+        metavar=""
+    )
+
+    parser.add_argument(
+        "-m", "--month",
+        action="store",
+        default=TODAY.month,
+        type=str,
+        help="the month part of a date",
+        metavar=""
+    )
+
+    parser.add_argument(
+        "-d", "--day",
+        action="store",
+        default=TODAY.day,
+        type=str,
+        help="the day part of a date",
+        metavar=""
+    )
+ 
+    parser.add_argument(
+        "-i", "--inputfile",
+        action="store",
+        default=skulpt.SKULPT_CACHE,
+        type=str,
+        help="CSV file containing the body fat data you wish to display",
+        metavar=""
+    )
+
+    # pares arguments
+    args = parser.parse_args()
+    year = args.year
+    month = args.month
+    day = args.day
+    inputfile = args.inputfile
+
+    # print report
+    data = skulpt.get_body_fat(year, month, day, inputfile)
+    date = skulpt.DATE_FORMAT.format(year=year, month=month, day=day)
+    msg = skulpt.REPORT.format(
+        date=date,
+        min_=data[0],
+        max_=data[1],
+        min_max_avg=data[2],
+        avg=data[3]
+    )
+    print(msg)
+
+
+if __name__ == "__main__":
+    main()

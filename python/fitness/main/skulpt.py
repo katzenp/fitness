@@ -1,4 +1,3 @@
-#! /usr/bin/python
 """
 skulpt.py
 
@@ -6,9 +5,6 @@ Description:
     Tools and utilities for managing Skulpt-Chzl body fat scanner data 
 """
 # Python standard libraries
-import argparse
-import datetime
-import json
 import os
 import re
 
@@ -122,82 +118,3 @@ def get_body_fat(year, month, day, sourcefile):
     min_max_avg = (bf_min + bf_max) / 2.0
 
     return bf_min, bf_max, min_max_avg, bf_avg
-
-
-# ==============================================================================
-# main
-# ==============================================================================
-def main():
-    """
-    Command line entry point function
-
-    :return: N/A
-    :rvalue: N/A
-    """
-    # date time
-    TODAY = datetime.datetime.today()
-
-    # define argument parser
-    DESCRIPTION = """
-    Prints out body fat data for the given date based on a Skulpt cache
-    """
-    parser = argparse.ArgumentParser(
-        prog=os.path.basename(__file__),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=DESCRIPTION)
-
-    # add command line args
-    parser.add_argument(
-        "-y", "--year",
-        action="store",
-        default=TODAY.year,
-        type=str,
-        help="The year",
-        metavar=""
-    )
-
-    parser.add_argument(
-        "-m", "--month",
-        action="store",
-        default=TODAY.month,
-        type=str,
-        help="The month",
-        metavar=""
-    )
-
-    parser.add_argument(
-        "-d", "--day",
-        action="store",
-        default=TODAY.day,
-        type=str,
-        help="The day",
-        metavar=""
-    )
-
-    parser.add_argument(
-        "-s", "--sourcefile",
-        action="store",
-        default=SKULPT_CACHE,
-        type=str,
-        help="Skulpt cache file (.csv)",
-        metavar=""
-    )
-
-    # pares arguments
-    args = parser.parse_args()
-    year = args.year
-    month = args.month
-    day = args.day
-
-    # print report
-    sourcefile = args.sourcefile
-    data = get_body_fat(year, month, day, sourcefile)
-    date = DATE_FORMAT.format(year=year, month=month, day=day)
-    msg = REPORT.format(
-        date=date, min_=data[0], max_=data[1], min_max_avg=data[2], avg=data[3]
-    )
-    print(msg)
-
-
-if __name__ == "__main__":
-    main()
