@@ -1,10 +1,12 @@
 # Python
-*.py[cow]
+*.py[cwd]
+
+# build system
+build*
 
 # IDE
-*.idea*
-*.pydevproject*
+*.idea
+*.pydevproject
 
 # Miscellaneous
-temp/*
-*.DS_Store*
+*.DS_Store
