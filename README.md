@@ -1,7 +1,5 @@
-# FITNESS
-
-### Description
-...A library of tools, and utilities for managing personal fitness goals and progress
+# Fitness
+... A library of tools, and utilities for managing personal fitness goals
 
 ### authors
 * Paul Katzen
