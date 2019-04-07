@@ -5,24 +5,6 @@ Description:
     User interface for registering/tracking an individual's body metrics
         - body_fat
         - muscle size
-
-    SIZE_DATA = {
-        'date': {
-            'l_wrist': 0.00,
-            'r_wrist': 0.00,
-            'l_forearm': 0.00,
-            'r_forearm': 0.00,
-            'l_bicep': 0.00,
-            'r_bicep': 0.00,
-            'l_ankle': 0.00,
-            'r_ankle': 0.00,
-            'l_calf': 0.00,
-            'r_calf': 0.00,
-            'l_thigh': 0.00,
-            'r_thigh': 0.00,
-            'waist': 0.00,
-            'chest': 0.00,
-            'neck': 0.00}}
 """
 # Python standard libraries
 import os
@@ -30,10 +12,10 @@ import re
 import sys
 
 # Qt libraries
-from PySide import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 # local libraries
-import python.main.body_weight as body_weight
+import fitness.bodyweight as body_weight
 
 
 # ==============================================================================

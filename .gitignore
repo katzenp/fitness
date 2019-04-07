@@ -10,3 +10,4 @@ build*
 
 # Miscellaneous
 *.DS_Store
+*temp/

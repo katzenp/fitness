@@ -32,9 +32,9 @@ def macro_calories(carbohydrate, fat, protein):
     :return: macronutrient calories like: (carb_calories, fat_calories, protein_calories)
     :rtype: tuple
     """
-    carbohydrate *= SETTINGS["macro_calories"]["carbohydrate"]    
-    fat *= SETTINGS["macro_calories"]["fat"]    
-    protein *= SETTINGS["macro_calories"]["protein"]
+    carbohydrate *= 4
+    fat *= 9
+    protein *= 4
     return (carbohydrate, fat, protein)
 
 

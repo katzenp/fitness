@@ -1,6 +1,14 @@
-#! /usr/local/bin/python
+"""
+weighin_ui.py
+
+Description:
+    Weigh logging user interfaces
+"""
+# stdlib
 import datetime
 import sys
+
+# external
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -213,22 +221,4 @@ class WeighInDialog(QtWidgets.QDialog):
     def _connect_signals(self):
         for each in self._spinboxes[:-1]:
             each.valueChanged.connect(self._data_changed)
-
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication.instance()
-    if not app:
-        app = QtWidgets.QApplication(sys.argv)
-    
-    # ui_ = WeighInDialog()
-    # ui_ .show()
-    
-    d = WeighInDelegate()
-    m = WeighInModel()
-    ui_ = QtWidgets.QTableView()
-    ui_.setModel(m)
-    ui_.setItemDelegate(d)
-    ui_ .show()
-
-    sys.exit(app.exec_())
         

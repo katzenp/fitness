@@ -30,9 +30,18 @@ install(
     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE
 )
 
-# ressources/data sources
+# configuration files
 install(
-    DIRECTORY ./resources
+    DIRECTORY ./configs
+    DESTINATION $ENV{RELEASE}/${PROJECT_NAME}/${PROJECT_VERSION}
+    REGEX ".*"
+    REGEX ".*.DS_Store*" EXCLUDE
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE
+)
+
+# template files
+install(
+    DIRECTORY ./templates
     DESTINATION $ENV{RELEASE}/${PROJECT_NAME}/${PROJECT_VERSION}
     REGEX ".*"
     REGEX ".*.DS_Store*" EXCLUDE
