@@ -15,8 +15,7 @@ import fitness
 # ==============================================================================
 # constants / globals
 # ==============================================================================
-SKULPT_CACHE = os.path.join(fitness.CACHES, "skulpt.csv")
-DATE_FORMAT = fitness.SETTINGS.get("date_format")
+DATE_FORMAT = "{year:04d}-{month:02d}-{day:02d}"
 REPORT = """{date}
     min       {min_:4.2f}
     max       {max_:4.2f}

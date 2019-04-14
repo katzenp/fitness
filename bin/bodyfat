@@ -1,4 +1,4 @@
-#! /usr/local/bin/python
+#! /usr/bin/python
 """
 skulpt.py
 
@@ -16,7 +16,7 @@ pkg_root = os.path.realpath(__file__).rsplit(os.sep, 2)[0]
 if pkg_root not in sys.path:
     sys.path.append(pkg_root)
 
-import fitness.main.skulpt as skulpt
+import fitness.skulpt as skulpt
 
 
 # ==============================================================================
@@ -80,7 +80,7 @@ def main():
     parser.add_argument(
         "-i", "--inputfile",
         action="store",
-        default=skulpt.SKULPT_CACHE,
+        required=True,
         type=str,
         help="CSV file containing the body fat data you wish to display",
         metavar=""
