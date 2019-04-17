@@ -6,7 +6,6 @@
         "female",
         "male"
     ],
-
     "measurement": {
         "imperial": {
             "height": "in.",
@@ -17,14 +16,12 @@
             "height": "cm.",
             "weight": "kg."
         }
-    },
-    
+    },    
     "macro_calories": {
         "carbohydrate": 4,
         "fat": 9,
         "protein": 4
     },
-
     "macro_multipliers": {   
         "cut": {
             "carbohydrate": 1.0,
@@ -42,13 +39,11 @@
             "protein": 1.0
         }
     },
-
     "bmr_formulas": [
         "harrisBenedict",
         "mifflinStJeor",
         "katchMcArdle"
     ],
-
     "tdee_multipliers": {
         "inactive": 1.00,
         "light": 1.20,

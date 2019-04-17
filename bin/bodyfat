@@ -12,10 +12,6 @@ import os
 import sys
 
 # Local libraries
-pkg_root = os.path.realpath(__file__).rsplit(os.sep, 2)[0]
-if pkg_root not in sys.path:
-    sys.path.append(pkg_root)
-
 import fitness.skulpt as skulpt
 
 
